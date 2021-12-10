@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: sample-workflow-
+spec:
+  entrypoint: main
+
+  templates:
+  - name: main
+    inputs:
+      parameters:
+      - name: parameter_name
+        value: "first workflow"
+      
+    dag:
+      tasks:
+        - name: print
+          template: print-message
+          script:
+            image: docker/whalesay:latest
+            resources:
+              limits:
+                memory: 256Mi
+                cpu: 200m
+              requests:
+                memory: 64Mi
+                cpu: 50m
+              command: ["bash"]
+              env:
+                - name: name
+                  value: "{{inputs.parameters.parameter_name}}"
+              source: |
+                #!/usr/bin/env bash
+                # Ref: https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
+                set -euo pipefail
+                print ${name}
